@@ -77,14 +77,11 @@ source env/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
-4. **Configuration de la base de données**
+4. **Configuration des variables d'environnement**
 ```bash
-# Créer la base PostgreSQL
-createdb ecommerce_db
-
 # Copier et configurer les variables d'environnement
 cp .env.example .env
-# Éditer .env avec vos paramètres
+# Éditer .env avec vos paramètres (optionnel pour SQLite)
 ```
 
 5. **Migrations**
@@ -140,10 +137,10 @@ La documentation interactive est disponible à :
 
 - **Django 5.0** : Framework web Python
 - **Django REST Framework** : API REST
-- **PostgreSQL** : Base de données
+- **SQLite** : Base de données
 - **JWT** : Authentification
 - **Stripe** : Paiements en ligne
-- **Celery + Redis** : Tâches asynchrones
+- **Celery + Redis** : Tâches asynchrones (optionnel)
 - **drf-spectacular** : Documentation API
 
 ## Conformité Légale Belge

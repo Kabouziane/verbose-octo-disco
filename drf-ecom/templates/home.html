@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>E-commerce API Dashboard</h1>
+        <p class="lead">API Django REST Framework avec comptabilité belge</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Shop</h5>
+                <p class="card-text">Gestion des produits, commandes et paiements</p>
+                <a href="/api/shop/" class="btn btn-primary">API Shop</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Services</h5>
+                <p class="card-text">Rendez-vous, abonnements et support</p>
+                <a href="/api/service/" class="btn btn-primary">API Service</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Admin Dashboard</h5>
+                <p class="card-text">RH, comptabilité et facturation</p>
+                <a href="/api/admin-dashboard/" class="btn btn-primary">API Admin</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h3>Documentation API</h3>
+        <ul class="list-group">
+            <li class="list-group-item"><a href="/api/docs/">Swagger UI</a></li>
+            <li class="list-group-item"><a href="/api/schema/">OpenAPI Schema</a></li>
+            <li class="list-group-item"><a href="/admin/">Interface Admin</a></li>
+        </ul>
+    </div>
+    
+    <div class="col-md-6">
+        <h3>Authentification</h3>
+        <ul class="list-group">
+            <li class="list-group-item">POST /api/auth/token/ - Obtenir token JWT</li>
+            <li class="list-group-item">POST /api/auth/token/refresh/ - Rafraîchir token</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
