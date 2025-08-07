@@ -1,12 +1,11 @@
 from pathlib import Path
-from decouple import config
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me')
-DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+SECRET_KEY = 'django-insecure-change-me-in-production'
+DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 DJANGO_APPS = [
     'django.contrib.admin',
@@ -131,12 +130,12 @@ SPECTACULAR_SETTINGS = {
 }
 
 # Stripe Configuration
-STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY', default='')
-STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
+STRIPE_PUBLISHABLE_KEY = ''
+STRIPE_SECRET_KEY = ''
 
 # Celery Configuration
-CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = config('REDIS_URL', default='redis://localhost:6379/0')
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 # Belgian VAT Rates
 BELGIAN_VAT_RATES = {
