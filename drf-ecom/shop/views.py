@@ -6,6 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 import stripe
 from django.conf import settings
+from .vat_validator import validate_vat_number
 
 from .models import Category, Product, Customer, Cart, CartItem, Order, Wishlist
 from .serializers import (
@@ -49,6 +50,20 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Customer.objects.filter(user=self.request.user)
+
+    @action(detail=False, methods=['post'])
+    def validate_vat(self, request):
+        """Valider un numéro de TVA et récupérer les informations entreprise"""
+        vat_number = request.data.get('vat_number', '')
+        
+        if not vat_number:
+            return Response(
+                {'error': 'Numéro de TVA requis'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        result = validate_vat_number(vat_number)
+        return Response(result)
 
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
