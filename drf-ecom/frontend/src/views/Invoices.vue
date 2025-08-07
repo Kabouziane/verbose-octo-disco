@@ -7,6 +7,27 @@
       </button>
     </div>
 
+    <!-- Filtres par période -->
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label class="form-label">Année</label>
+        <select class="form-select" v-model="filters.year" @change="filterByPeriod">
+          <option value="">Toutes les années</option>
+          <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Trimestre</label>
+        <select class="form-select" v-model="filters.quarter" @change="filterByPeriod">
+          <option value="">Tous les trimestres</option>
+          <option value="1">T1 (Jan-Mar)</option>
+          <option value="2">T2 (Avr-Juin)</option>
+          <option value="3">T3 (Juil-Sep)</option>
+          <option value="4">T4 (Oct-Déc)</option>
+        </select>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-body">
         <div v-if="loading" class="text-center">
@@ -43,11 +64,14 @@
                   </span>
                 </td>
                 <td>
-                  <button class="btn btn-sm btn-outline-primary me-1">
+                  <button class="btn btn-sm btn-outline-primary me-1" @click="viewInvoice(invoice)">
                     <i class="fas fa-eye"></i>
                   </button>
-                  <button class="btn btn-sm btn-outline-success me-1">
+                  <button class="btn btn-sm btn-outline-success me-1" @click="downloadPDF(invoice)">
                     <i class="fas fa-download"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-info me-1" @click="sendEmail(invoice)" :disabled="!invoice.customer">
+                    <i class="fas fa-envelope"></i>
                   </button>
                 </td>
               </tr>
@@ -79,8 +103,28 @@
                 </div>
                 <div class="col-md-6">
                   <div class="mb-3">
+                    <label class="form-label">Client *</label>
+                    <select class="form-select" v-model="invoiceForm.customer" required>
+                      <option value="">Sélectionner un client</option>
+                      <option v-for="customer in customers" :key="customer.id" :value="customer.id">
+                        {{ customer.user.first_name }} {{ customer.user.last_name }} - {{ customer.user.email }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
                     <label class="form-label">Date de facture</label>
                     <input type="date" class="form-control" v-model="invoiceForm.invoice_date" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Date d'échéance</label>
+                    <input type="date" class="form-control" v-model="invoiceForm.due_date" required>
                   </div>
                 </div>
               </div>
@@ -180,10 +224,17 @@ export default {
   data() {
     return {
       showCreateModal: false,
+      customers: [],
+      filters: {
+        year: '',
+        quarter: ''
+      },
+      availableYears: [2024, 2023, 2022],
       invoiceForm: {
         invoice_type: 'sale',
+        customer: '',
         invoice_date: new Date().toISOString().split('T')[0],
-        due_date: '',
+        due_date: this.getDefaultDueDate(),
         lines: [
           {
             description: '',
@@ -263,12 +314,96 @@ export default {
         console.error('Error creating invoice:', error)
       }
     },
+    getDefaultDueDate() {
+      const date = new Date()
+      date.setDate(date.getDate() + 30)
+      return date.toISOString().split('T')[0]
+    },
+    async fetchCustomers() {
+      try {
+        const response = await this.$store.dispatch('customers/fetchCustomers')
+        this.customers = response || []
+      } catch (error) {
+        console.error('Error fetching customers:', error)
+      }
+    },
+    async downloadPDF(invoice) {
+      try {
+        const response = await fetch(`/api/admin-dashboard/invoices/${invoice.id}/download_pdf/`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          }
+        })
+        
+        if (response.ok) {
+          const blob = await response.blob()
+          const url = window.URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `facture_${invoice.invoice_number}.pdf`
+          a.click()
+          window.URL.revokeObjectURL(url)
+        }
+      } catch (error) {
+        console.error('Error downloading PDF:', error)
+      }
+    },
+    async sendEmail(invoice) {
+      if (!invoice.customer) {
+        alert('Aucun client associé à cette facture')
+        return
+      }
+      
+      try {
+        const response = await fetch(`/api/admin-dashboard/invoices/${invoice.id}/send_email/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        
+        const data = await response.json()
+        if (response.ok) {
+          alert('Email envoyé avec succès !')
+        } else {
+          alert(`Erreur: ${data.error}`)
+        }
+      } catch (error) {
+        console.error('Error sending email:', error)
+        alert('Erreur lors de l\'envoi de l\'email')
+      }
+    },
+    async filterByPeriod() {
+      try {
+        const params = new URLSearchParams()
+        if (this.filters.year) params.append('year', this.filters.year)
+        if (this.filters.quarter) params.append('quarter', this.filters.quarter)
+        
+        const response = await fetch(`/api/admin-dashboard/invoices/by_period/?${params}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          this.$store.commit('invoices/SET_INVOICES', data)
+        }
+      } catch (error) {
+        console.error('Error filtering invoices:', error)
+      }
+    },
+    viewInvoice(invoice) {
+      console.log('View invoice:', invoice)
+    },
     closeModal() {
       this.showCreateModal = false
       this.invoiceForm = {
         invoice_type: 'sale',
+        customer: '',
         invoice_date: new Date().toISOString().split('T')[0],
-        due_date: '',
+        due_date: this.getDefaultDueDate(),
         lines: [
           {
             description: '',
@@ -283,6 +418,7 @@ export default {
   },
   mounted() {
     this.fetchInvoices()
+    this.fetchCustomers()
   }
 }
 </script>

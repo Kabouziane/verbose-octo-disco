@@ -4,8 +4,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.db.models import Sum, Q
 from django.utils import timezone
+from django.http import HttpResponse
 from datetime import datetime, timedelta
 from decimal import Decimal
+from .utils import generate_invoice_pdf, send_invoice_email, get_invoices_by_period
 
 from .models import (
     Department, Employee, Leave,
@@ -255,6 +257,37 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             status__in=['sent']
         )
         serializer = self.get_serializer(overdue_invoices, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def download_pdf(self, request, pk=None):
+        """Télécharger la facture en PDF"""
+        invoice = self.get_object()
+        pdf_buffer = generate_invoice_pdf(invoice)
+        
+        response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="facture_{invoice.invoice_number}.pdf"'
+        return response
+
+    @action(detail=True, methods=['post'])
+    def send_email(self, request, pk=None):
+        """Envoyer la facture par email"""
+        invoice = self.get_object()
+        success, message = send_invoice_email(invoice)
+        
+        if success:
+            return Response({'message': message}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': message}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'])
+    def by_period(self, request):
+        """Factures par période (trimestre/année)"""
+        year = request.query_params.get('year')
+        quarter = request.query_params.get('quarter')
+        
+        invoices = get_invoices_by_period(year, quarter)
+        serializer = self.get_serializer(invoices, many=True)
         return Response(serializer.data)
 
 class PaymentViewSet(viewsets.ModelViewSet):
