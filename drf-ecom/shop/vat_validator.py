@@ -4,7 +4,7 @@ from typing import Dict, Optional
 
 def validate_vat_number(vat_number: str) -> Dict:
     """
-    Valide un numéro de TVA via l'API VIES (gratuite)
+    Valide un numéro de TVA via l'API VIES officielle
     """
     # Nettoyer le numéro de TVA
     clean_vat = re.sub(r'[^A-Z0-9]', '', vat_number.upper())
@@ -26,42 +26,40 @@ def validate_vat_number(vat_number: str) -> Dict:
     vat_num = clean_vat[2:]
     
     try:
-        # Appel à l'API VIES (gratuite)
-        url = "http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl"
+        # Utilisation de l'API VIES officielle (REST)
+        vies_url = f"https://ec.europa.eu/taxation_customs/vies/rest-api/ms/{country_code}/vat/{vat_num}"
         
-        # Alternative: utiliser une API REST gratuite
-        api_url = f"https://api.vatstack.com/v1/validate?vat_number={clean_vat}"
-        
-        # Utilisation d'une API gratuite alternative
-        response = requests.get(
-            f"https://vat-api.com/check/{country_code}/{vat_num}",
-            timeout=10
-        )
+        response = requests.get(vies_url, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
             
-            if data.get('valid'):
+            if data.get('isValid', False):
                 return {
                     'valid': True,
                     'vat_number': clean_vat,
                     'country_code': country_code,
-                    'company_name': data.get('company_name', ''),
-                    'company_address': data.get('company_address', ''),
-                    'company_city': data.get('company_city', ''),
-                    'company_postal_code': data.get('company_postal_code', ''),
-                    'company_country': data.get('company_country', '')
+                    'company_name': data.get('name', ''),
+                    'company_address': data.get('address', ''),
+                    'request_date': data.get('requestDate', ''),
+                    'source': 'VIES'
                 }
             else:
                 return {
                     'valid': False,
-                    'error': 'Numéro de TVA invalide'
+                    'error': 'Numéro de TVA invalide selon VIES'
                 }
+        elif response.status_code == 400:
+            return {
+                'valid': False,
+                'error': 'Format de numéro de TVA invalide'
+            }
         else:
             # Fallback: validation basique du format
             return validate_vat_format(clean_vat)
             
-    except requests.RequestException:
+    except requests.RequestException as e:
+        print(f"Erreur VIES: {e}")
         # En cas d'erreur réseau, validation du format seulement
         return validate_vat_format(clean_vat)
 

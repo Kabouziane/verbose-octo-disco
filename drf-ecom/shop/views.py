@@ -62,7 +62,9 @@ class CustomerViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        print(f"Validation TVA pour: {vat_number}")
         result = validate_vat_number(vat_number)
+        print(f"Résultat: {result}")
         return Response(result)
 
 class CartViewSet(viewsets.ModelViewSet):
