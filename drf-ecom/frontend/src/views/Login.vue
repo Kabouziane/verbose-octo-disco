@@ -80,7 +80,8 @@ export default {
         await this.$store.dispatch('auth/login', this.credentials)
         this.$router.push('/dashboard')
       } catch (error) {
-        this.error = 'Identifiants incorrects'
+        console.error('Login error:', error.response?.data || error.message)
+        this.error = error.response?.data?.detail || 'Identifiants incorrects'
       } finally {
         this.loading = false
       }
