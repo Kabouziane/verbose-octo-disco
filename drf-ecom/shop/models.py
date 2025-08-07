@@ -58,6 +58,8 @@ class Customer(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     vat_number = models.CharField(max_length=20, blank=True)
     company_name = models.CharField(max_length=200, blank=True)
+    company_address = models.TextField(blank=True)
+    iban = models.CharField(max_length=34, blank=True, help_text="Numéro IBAN")
     is_business = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

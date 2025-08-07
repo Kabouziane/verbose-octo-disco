@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 import stripe
 from django.conf import settings
 from .vat_validator import validate_vat_number
+from .customer_serializers import CustomerCreateSerializer
 
 from .models import Category, Product, Customer, Cart, CartItem, Order, Wishlist
 from .serializers import (
@@ -51,7 +52,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Customer.objects.filter(user=self.request.user)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def validate_vat(self, request):
         """Valider un numéro de TVA et récupérer les informations entreprise"""
         vat_number = request.data.get('vat_number', '')
@@ -66,6 +67,25 @@ class CustomerViewSet(viewsets.ModelViewSet):
         result = validate_vat_number(vat_number)
         print(f"Résultat: {result}")
         return Response(result)
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def create_customer(self, request):
+        """Créer un nouveau client"""
+        print(f"Données reçues: {request.data}")
+        serializer = CustomerCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                customer = serializer.save()
+                print(f"Client créé avec succès: {customer.id}")
+                return Response({
+                    'id': customer.id,
+                    'message': 'Client créé avec succès'
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                print(f"Erreur lors de la création: {e}")
+                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Erreurs de validation: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer

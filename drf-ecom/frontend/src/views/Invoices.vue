@@ -188,18 +188,20 @@
                 <div class="col-md-8"></div>
                 <div class="col-md-4">
                   <table class="table table-sm">
-                    <tr>
-                      <td><strong>Total HT:</strong></td>
-                      <td class="text-end"><strong>€{{ totalHT }}</strong></td>
-                    </tr>
-                    <tr>
-                      <td><strong>TVA:</strong></td>
-                      <td class="text-end"><strong>€{{ totalVAT }}</strong></td>
-                    </tr>
-                    <tr>
-                      <td><strong>Total TTC:</strong></td>
-                      <td class="text-end"><strong>€{{ totalTTC }}</strong></td>
-                    </tr>
+                    <tbody>
+                      <tr>
+                        <td><strong>Total HT:</strong></td>
+                        <td class="text-end"><strong>€{{ totalHT }}</strong></td>
+                      </tr>
+                      <tr>
+                        <td><strong>TVA:</strong></td>
+                        <td class="text-end"><strong>€{{ totalVAT }}</strong></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Total TTC:</strong></td>
+                        <td class="text-end"><strong>€{{ totalTTC }}</strong></td>
+                      </tr>
+                    </tbody>
                   </table>
                 </div>
               </div>

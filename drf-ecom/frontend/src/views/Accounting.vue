@@ -228,18 +228,20 @@
                 <div class="col-md-8"></div>
                 <div class="col-md-4">
                   <table class="table table-sm">
-                    <tr>
-                      <td><strong>Total Débit:</strong></td>
-                      <td class="text-end"><strong>€{{ totalDebit }}</strong></td>
-                    </tr>
-                    <tr>
-                      <td><strong>Total Crédit:</strong></td>
-                      <td class="text-end"><strong>€{{ totalCredit }}</strong></td>
-                    </tr>
-                    <tr :class="isBalanced ? 'text-success' : 'text-danger'">
-                      <td><strong>Équilibre:</strong></td>
-                      <td class="text-end"><strong>{{ isBalanced ? 'OK' : 'KO' }}</strong></td>
-                    </tr>
+                    <tbody>
+                      <tr>
+                        <td><strong>Total Débit:</strong></td>
+                        <td class="text-end"><strong>€{{ totalDebit }}</strong></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Total Crédit:</strong></td>
+                        <td class="text-end"><strong>€{{ totalCredit }}</strong></td>
+                      </tr>
+                      <tr :class="isBalanced ? 'text-success' : 'text-danger'">
+                        <td><strong>Équilibre:</strong></td>
+                        <td class="text-end"><strong>{{ isBalanced ? 'OK' : 'KO' }}</strong></td>
+                      </tr>
+                    </tbody>
                   </table>
                 </div>
               </div>

@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "dev": "vite",
+    "dev": "set NODE_NO_WARNINGS=1 && vite",
     "preview": "vite preview"
   },
   "dependencies": {

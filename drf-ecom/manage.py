@@ -2,6 +2,11 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+import warnings
+
+# Supprimer les warnings de dépréciation
+warnings.filterwarnings("ignore", category=UserWarning, module="rest_framework_simplejwt")
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 def main():

@@ -206,36 +206,40 @@
               <div class="col-md-6">
                 <h6>Opérations imposables</h6>
                 <table class="table table-sm">
-                  <tr>
-                    <td>Grille 00 - Opérations exemptées:</td>
-                    <td class="text-end">€{{ selectedDeclaration.grid_00_operations_exempted }}</td>
-                  </tr>
-                  <tr>
-                    <td>Grille 01 - Opérations 6%:</td>
-                    <td class="text-end">€{{ selectedDeclaration.grid_01_operations_6_percent }}</td>
-                  </tr>
-                  <tr>
-                    <td>Grille 03 - Opérations 21%:</td>
-                    <td class="text-end">€{{ selectedDeclaration.grid_03_operations_21_percent }}</td>
-                  </tr>
+                  <tbody>
+                    <tr>
+                      <td>Grille 00 - Opérations exemptées:</td>
+                      <td class="text-end">€{{ selectedDeclaration.grid_00_operations_exempted }}</td>
+                    </tr>
+                    <tr>
+                      <td>Grille 01 - Opérations 6%:</td>
+                      <td class="text-end">€{{ selectedDeclaration.grid_01_operations_6_percent }}</td>
+                    </tr>
+                    <tr>
+                      <td>Grille 03 - Opérations 21%:</td>
+                      <td class="text-end">€{{ selectedDeclaration.grid_03_operations_21_percent }}</td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
               
               <div class="col-md-6">
                 <h6>TVA due</h6>
                 <table class="table table-sm">
-                  <tr>
-                    <td>Grille 54 - TVA 6%:</td>
-                    <td class="text-end">€{{ selectedDeclaration.grid_54_vat_6_percent }}</td>
-                  </tr>
-                  <tr>
-                    <td>Grille 56 - TVA 21%:</td>
-                    <td class="text-end">€{{ selectedDeclaration.grid_56_vat_21_percent }}</td>
-                  </tr>
-                  <tr>
-                    <td>Grille 59 - TVA déductible:</td>
-                    <td class="text-end">€{{ selectedDeclaration.grid_59_vat_deductible }}</td>
-                  </tr>
+                  <tbody>
+                    <tr>
+                      <td>Grille 54 - TVA 6%:</td>
+                      <td class="text-end">€{{ selectedDeclaration.grid_54_vat_6_percent }}</td>
+                    </tr>
+                    <tr>
+                      <td>Grille 56 - TVA 21%:</td>
+                      <td class="text-end">€{{ selectedDeclaration.grid_56_vat_21_percent }}</td>
+                    </tr>
+                    <tr>
+                      <td>Grille 59 - TVA déductible:</td>
+                      <td class="text-end">€{{ selectedDeclaration.grid_59_vat_deductible }}</td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             </div>
@@ -246,14 +250,16 @@
               <div class="col-md-12">
                 <h6>Solde</h6>
                 <table class="table table-sm">
-                  <tr>
-                    <td><strong>Grille 71 - TVA à payer:</strong></td>
-                    <td class="text-end"><strong>€{{ selectedDeclaration.grid_71_vat_to_pay }}</strong></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Grille 72 - TVA à récupérer:</strong></td>
-                    <td class="text-end"><strong>€{{ selectedDeclaration.grid_72_vat_to_recover }}</strong></td>
-                  </tr>
+                  <tbody>
+                    <tr>
+                      <td><strong>Grille 71 - TVA à payer:</strong></td>
+                      <td class="text-end"><strong>€{{ selectedDeclaration.grid_71_vat_to_pay }}</strong></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Grille 72 - TVA à récupérer:</strong></td>
+                      <td class="text-end"><strong>€{{ selectedDeclaration.grid_72_vat_to_recover }}</strong></td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             </div>
@@ -312,7 +318,6 @@ export default {
     },
     async generateDeclaration() {
       try {
-        // API call to generate declaration
         console.log('Generate declaration:', this.declarationForm)
         this.closeGenerateModal()
         this.fetchVATDeclarations()
