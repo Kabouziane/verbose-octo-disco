@@ -7,6 +7,11 @@
       </button>
     </div>
 
+    <!-- Message de succès -->
+    <div v-if="showSuccessMessage" class="alert alert-success alert-dismissible fade show success-message" role="alert">
+      <i class="fas fa-check-circle me-2"></i>{{ successMessage }}
+    </div>
+
     <!-- Filtres par période -->
     <div class="row mb-3">
       <div class="col-md-3">
@@ -97,7 +102,7 @@
                     <label class="form-label">Type de facture</label>
                     <select class="form-select" v-model="invoiceForm.invoice_type" required>
                       <option value="sale">Facture de vente</option>
-                      <option value="purchase">Facture d'achat</option>
+                      <option value="credit_note">Note de crédit</option>
                     </select>
                   </div>
                 </div>
@@ -107,7 +112,7 @@
                     <select class="form-select" v-model="invoiceForm.customer" required>
                       <option value="">Sélectionner un client</option>
                       <option v-for="customer in customers" :key="customer.id" :value="customer.id">
-                        {{ customer.user.first_name }} {{ customer.user.last_name }} - {{ customer.user.email }}
+                        {{ customer.is_business ? customer.company_name : (customer.user?.first_name + ' ' + customer.user?.last_name).trim() }} - {{ customer.user_email }}
                       </option>
                     </select>
                   </div>
@@ -219,14 +224,18 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+// Imports Vuex supprimés - utilisation directe de l'API
 
 export default {
   name: 'Invoices',
   data() {
     return {
       showCreateModal: false,
+      showSuccessMessage: false,
+      successMessage: '',
       customers: [],
+      invoicesList: [],
+      loading: false,
       filters: {
         year: '',
         quarter: ''
@@ -250,23 +259,45 @@ export default {
     }
   },
   computed: {
-    ...mapState('invoices', ['invoices', 'loading']),
+    invoices() {
+      return this.invoicesList
+    },
     totalHT() {
-      return this.invoiceForm.lines.reduce((sum, line) => sum + (parseFloat(line.total_excl_vat) || 0), 0).toFixed(2)
+      const total = this.invoiceForm.lines.reduce((sum, line) => {
+        const lineTotal = parseFloat(line.total_excl_vat) || 0
+        return sum + (isNaN(lineTotal) ? 0 : lineTotal)
+      }, 0)
+      return isNaN(total) ? '0.00' : total.toFixed(2)
     },
     totalVAT() {
-      return this.invoiceForm.lines.reduce((sum, line) => {
+      const total = this.invoiceForm.lines.reduce((sum, line) => {
         const ht = parseFloat(line.total_excl_vat) || 0
         const vatRate = parseFloat(line.vat_rate) || 0
-        return sum + (ht * vatRate / 100)
-      }, 0).toFixed(2)
+        const vatAmount = ht * vatRate / 100
+        return sum + (isNaN(vatAmount) ? 0 : vatAmount)
+      }, 0)
+      return isNaN(total) ? '0.00' : total.toFixed(2)
     },
     totalTTC() {
-      return (parseFloat(this.totalHT) + parseFloat(this.totalVAT)).toFixed(2)
+      const ht = parseFloat(this.totalHT) || 0
+      const vat = parseFloat(this.totalVAT) || 0
+      const total = ht + vat
+      return isNaN(total) ? '0.00' : total.toFixed(2)
     }
   },
   methods: {
-    ...mapActions('invoices', ['fetchInvoices', 'createInvoice']),
+    async fetchInvoices() {
+      try {
+        const response = await fetch('http://localhost:8000/api/admin-dashboard/invoices/')
+        if (response.ok) {
+          const data = await response.json()
+          this.invoicesList = data.results || data
+          console.log('Factures chargées:', this.invoicesList)
+        }
+      } catch (error) {
+        console.error('Error fetching invoices:', error)
+      }
+    },
     formatDate(date) {
       return new Date(date).toLocaleDateString('fr-FR')
     },
@@ -293,7 +324,8 @@ export default {
     calculateLine(line) {
       const quantity = parseFloat(line.quantity) || 0
       const unitPrice = parseFloat(line.unit_price_excl_vat) || 0
-      line.total_excl_vat = (quantity * unitPrice).toFixed(2)
+      const total = quantity * unitPrice
+      line.total_excl_vat = isNaN(total) ? 0 : parseFloat(total.toFixed(2))
     },
     addLine() {
       this.invoiceForm.lines.push({
@@ -308,12 +340,81 @@ export default {
       this.invoiceForm.lines.splice(index, 1)
     },
     async saveInvoice() {
+      const payload = {
+        invoice_type: this.invoiceForm.invoice_type,
+        customer: parseInt(this.invoiceForm.customer),
+        invoice_date: this.invoiceForm.invoice_date,
+        due_date: this.invoiceForm.due_date,
+        billing_address: 'Adresse par défaut',
+        subtotal_excl_vat: parseFloat(this.totalHT),
+        vat_amount: parseFloat(this.totalVAT),
+        total_incl_vat: parseFloat(this.totalTTC),
+        lines: this.invoiceForm.lines.map(line => {
+          const totalExclVat = Number(line.total_excl_vat) || 0
+          const vatRate = Number(line.vat_rate) || 0
+          const vatAmount = totalExclVat * vatRate / 100
+          const totalInclVat = totalExclVat + vatAmount
+          
+          return {
+            description: String(line.description || ''),
+            quantity: Number(line.quantity) || 1,
+            unit_price_excl_vat: Number(line.unit_price_excl_vat) || 0,
+            vat_rate: vatRate,
+            total_excl_vat: Math.round(totalExclVat * 100) / 100,
+            vat_amount: Math.round(vatAmount * 100) / 100,
+            total_incl_vat: Math.round(totalInclVat * 100) / 100
+          }
+        })
+      }
+      
+      console.log('Payload envoyé:', JSON.stringify(payload, null, 2))
+      
       try {
-        await this.createInvoice(this.invoiceForm)
-        this.closeModal()
-        this.fetchInvoices()
+        const response = await fetch('http://localhost:8000/api/admin-dashboard/invoices/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+        
+        if (response.ok) {
+          this.successMessage = 'Facture créée avec succès !'
+          this.showSuccessMessage = true
+          setTimeout(() => {
+            this.showSuccessMessage = false
+          }, 2000)
+          this.closeModal()
+          this.fetchInvoices()
+        } else {
+          console.error('Status:', response.status)
+          const errorText = await response.text()
+          console.error('Réponse brute:', errorText)
+          
+          try {
+            const error = JSON.parse(errorText)
+            console.error('Erreur JSON:', error)
+            let errorMessage = 'Erreur lors de la création:\n'
+            if (typeof error === 'object') {
+              for (const [field, messages] of Object.entries(error)) {
+                if (Array.isArray(messages)) {
+                  errorMessage += `${field}: ${messages.join(', ')}\n`
+                } else {
+                  errorMessage += `${field}: ${messages}\n`
+                }
+              }
+            } else {
+              errorMessage += error
+            }
+            alert(errorMessage)
+          } catch (parseError) {
+            console.error('Erreur parsing JSON:', parseError)
+            alert('Erreur serveur: ' + errorText.substring(0, 200))
+          }
+        }
       } catch (error) {
         console.error('Error creating invoice:', error)
+        alert('Erreur lors de la création de la facture')
       }
     },
     getDefaultDueDate() {
@@ -323,8 +424,12 @@ export default {
     },
     async fetchCustomers() {
       try {
-        const response = await this.$store.dispatch('customers/fetchCustomers')
-        this.customers = response || []
+        const response = await fetch('http://localhost:8000/api/shop/customers/')
+        if (response.ok) {
+          const data = await response.json()
+          this.customers = data.results || data
+          console.log('Clients chargés pour factures:', this.customers)
+        }
       } catch (error) {
         console.error('Error fetching customers:', error)
       }
@@ -428,5 +533,16 @@ export default {
 <style scoped>
 .modal.show {
   background-color: rgba(0, 0, 0, 0.5);
+}
+
+.success-message {
+  animation: fadeInOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  20% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
 }
 </style>

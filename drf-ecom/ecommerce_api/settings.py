@@ -122,6 +122,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True  # Pour le développement
+CORS_ALLOW_CREDENTIALS = True
+
 # Spectacular Configuration
 SPECTACULAR_SETTINGS = {
     'TITLE': 'E-commerce API',

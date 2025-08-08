@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Validation TVA</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Test Validation TVA</h1>
+    
+    <input type="text" id="vatNumber" placeholder="Numéro TVA" value="BE0874355129">
+    <button onclick="validateVAT()">Valider</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function validateVAT() {
+            const vatNumber = document.getElementById('vatNumber').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/shop/validate-vat/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ vat_number: vatNumber })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+            } catch (error) {
+                resultDiv.innerHTML = 'Erreur: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

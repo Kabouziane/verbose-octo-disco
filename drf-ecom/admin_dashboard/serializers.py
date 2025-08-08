@@ -114,7 +114,7 @@ class BelgianVATDeclarationSerializer(serializers.ModelSerializer):
 class InvoiceLineSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvoiceLine
-        fields = '__all__'
+        exclude = ['invoice']
 
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:

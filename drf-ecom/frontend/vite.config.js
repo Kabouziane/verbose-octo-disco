@@ -5,11 +5,25 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true
+    host: true
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: './index.html'
       }
     }
+  },
+  optimizeDeps: {
+    include: [
+      'vue',
+      'vue-router',
+      'vuex',
+      'axios',
+      'bootstrap',
+      '@popperjs/core',
+      'chart.js',
+      'vue-chartjs'
+    ]
   }
 })

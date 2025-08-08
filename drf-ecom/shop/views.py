@@ -47,10 +47,9 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
-    def get_queryset(self):
-        return Customer.objects.filter(user=self.request.user)
+
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def validate_vat(self, request):

@@ -29,14 +29,22 @@ class AddressSerializer(serializers.ModelSerializer):
 class CustomerSerializer(serializers.ModelSerializer):
     addresses = AddressSerializer(many=True, read_only=True)
     user_email = serializers.CharField(source='user.email', read_only=True)
+    user = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Customer
         fields = '__all__'
 
+    def get_user(self, obj):
+        return {
+            'first_name': obj.user.first_name,
+            'last_name': obj.user.last_name,
+            'email': obj.user.email
+        }
+
     def get_full_name(self, obj):
-        return f"{obj.user.first_name} {obj.user.last_name}"
+        return f"{obj.user.first_name} {obj.user.last_name}".strip()
 
 class CartItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)

@@ -91,8 +91,14 @@ def validate_vat_number(vat_number: str) -> Dict:
             print(f"Erreur HTTP: {response.status_code}")
             return validate_vat_format(clean_vat)
             
+    except requests.exceptions.Timeout:
+        print("Timeout VIES - Fallback format")
+        return validate_vat_format(clean_vat)
+    except requests.exceptions.ConnectionError:
+        print("Erreur connexion VIES - Fallback format")
+        return validate_vat_format(clean_vat)
     except Exception as e:
-        print(f"Erreur VIES SOAP: {e}")
+        print(f"Erreur VIES SOAP: {type(e).__name__}: {e}")
         return validate_vat_format(clean_vat)
 
 def validate_vat_format(vat_number: str) -> Dict:

@@ -217,7 +217,7 @@ class BelgianVATDeclarationViewSet(viewsets.ModelViewSet):
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = []
     filterset_fields = ['invoice_type', 'status', 'customer']
     search_fields = ['invoice_number', 'customer__user__email']
     ordering = ['-invoice_date']

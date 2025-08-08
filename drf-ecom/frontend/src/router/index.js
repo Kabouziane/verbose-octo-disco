@@ -82,15 +82,8 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem('access_token')
-  
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/login')
-  } else if (to.name === 'Login' && isAuthenticated) {
-    next('/dashboard')
-  } else {
-    next()
-  }
+  // Authentification désactivée temporairement
+  next()
 })
 
 export default router
