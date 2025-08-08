@@ -6,6 +6,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 import stripe
 from django.conf import settings
+from cache_system import cache_products, cache_customers, CacheManager
+from low_level_optimizations import PerformanceMonitor, DatabaseOptimizer
 from .vat_validator import validate_vat_number
 from .customer_serializers import CustomerCreateSerializer
 
@@ -33,6 +35,11 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'created_at']
     lookup_field = 'slug'
+    
+    @PerformanceMonitor.measure_execution_time
+    @cache_products(timeout=3600)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @action(detail=True, methods=['get'])
     def related_products(self, request, slug=None):
@@ -48,6 +55,11 @@ class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
     permission_classes = [AllowAny]
+    
+    @PerformanceMonitor.measure_execution_time
+    @cache_customers(timeout=1800)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 
@@ -68,6 +80,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         return Response(result)
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    @PerformanceMonitor.measure_execution_time
     def create_customer(self, request):
         """Créer un nouveau client"""
         print(f"Données reçues: {request.data}")
@@ -76,6 +89,8 @@ class CustomerViewSet(viewsets.ModelViewSet):
             try:
                 customer = serializer.save()
                 print(f"Client créé avec succès: {customer.id}")
+                # Invalider le cache des clients après création
+                CacheManager.clear_category('customers')
                 return Response({
                     'id': customer.id,
                     'message': 'Client créé avec succès'

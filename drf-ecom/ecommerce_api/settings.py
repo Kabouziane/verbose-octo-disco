@@ -34,13 +34,20 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'middleware.SecurityMiddleware',
+    'middleware.RateLimitMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'middleware.UserPreferenceMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'middleware.PerformanceMiddleware',
+    'middleware.CacheMiddleware',
+    'middleware.DatabaseOptimizationMiddleware',
+    'middleware.CompressionMiddleware',
 ]
 
 ROOT_URLCONF = 'ecommerce_api.urls'
@@ -135,6 +142,104 @@ SPECTACULAR_SETTINGS = {
 # Stripe Configuration
 STRIPE_PUBLISHABLE_KEY = ''
 STRIPE_SECRET_KEY = ''
+
+# Cache configuration avancée
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 3600,  # 1 heure par défaut
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
+    },
+    'sessions': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'sessions-cache',
+        'TIMEOUT': 86400,  # 24 heures
+    }
+}
+
+# Configuration des sessions avec cache
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'sessions'
+SESSION_COOKIE_AGE = 86400  # 24 heures
+SESSION_COOKIE_SECURE = False  # True en production avec HTTPS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Configuration des cookies
+CSRF_COOKIE_SECURE = False  # True en production avec HTTPS
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Logging configuration avancée
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'django.log',
+            'formatter': 'verbose',
+        },
+        'cache_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'cache.log',
+            'formatter': 'verbose',
+        },
+        'performance_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'performance.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'cache_system': {
+            'handlers': ['cache_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'low_level_optimizations': {
+            'handlers': ['performance_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+# Configuration des optimisations
+OPTIMIZATION_SETTINGS = {
+    'ENABLE_CACHE': True,
+    'ENABLE_ASYNC_PROCESSING': True,
+    'ENABLE_MEMORY_MONITORING': True,
+    'BULK_OPERATION_BATCH_SIZE': 1000,
+    'ASYNC_THREAD_POOL_SIZE': 4,
+    'CACHE_WARM_ON_STARTUP': True,
+}
 
 # Celery Configuration
 CELERY_BROKER_URL = 'redis://localhost:6379/0'

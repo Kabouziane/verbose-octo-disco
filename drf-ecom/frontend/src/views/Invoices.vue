@@ -265,24 +265,21 @@ export default {
     totalHT() {
       const total = this.invoiceForm.lines.reduce((sum, line) => {
         const lineTotal = parseFloat(line.total_excl_vat) || 0
-        return sum + (isNaN(lineTotal) ? 0 : lineTotal)
+        return sum + lineTotal
       }, 0)
-      return isNaN(total) ? '0.00' : total.toFixed(2)
+      return Math.round(total * 100) / 100
     },
     totalVAT() {
       const total = this.invoiceForm.lines.reduce((sum, line) => {
         const ht = parseFloat(line.total_excl_vat) || 0
         const vatRate = parseFloat(line.vat_rate) || 0
         const vatAmount = ht * vatRate / 100
-        return sum + (isNaN(vatAmount) ? 0 : vatAmount)
+        return sum + vatAmount
       }, 0)
-      return isNaN(total) ? '0.00' : total.toFixed(2)
+      return Math.round(total * 100) / 100
     },
     totalTTC() {
-      const ht = parseFloat(this.totalHT) || 0
-      const vat = parseFloat(this.totalVAT) || 0
-      const total = ht + vat
-      return isNaN(total) ? '0.00' : total.toFixed(2)
+      return Math.round((this.totalHT + this.totalVAT) * 100) / 100
     }
   },
   methods: {
@@ -325,7 +322,7 @@ export default {
       const quantity = parseFloat(line.quantity) || 0
       const unitPrice = parseFloat(line.unit_price_excl_vat) || 0
       const total = quantity * unitPrice
-      line.total_excl_vat = isNaN(total) ? 0 : parseFloat(total.toFixed(2))
+      line.total_excl_vat = Math.round(total * 100) / 100
     },
     addLine() {
       this.invoiceForm.lines.push({
@@ -340,15 +337,16 @@ export default {
       this.invoiceForm.lines.splice(index, 1)
     },
     async saveInvoice() {
+      this.loading = true
       const payload = {
         invoice_type: this.invoiceForm.invoice_type,
         customer: parseInt(this.invoiceForm.customer),
         invoice_date: this.invoiceForm.invoice_date,
         due_date: this.invoiceForm.due_date,
         billing_address: 'Adresse par défaut',
-        subtotal_excl_vat: parseFloat(this.totalHT),
-        vat_amount: parseFloat(this.totalVAT),
-        total_incl_vat: parseFloat(this.totalTTC),
+        subtotal_excl_vat: this.totalHT,
+        vat_amount: this.totalVAT,
+        total_incl_vat: this.totalTTC,
         lines: this.invoiceForm.lines.map(line => {
           const totalExclVat = Number(line.total_excl_vat) || 0
           const vatRate = Number(line.vat_rate) || 0
@@ -387,34 +385,22 @@ export default {
           this.closeModal()
           this.fetchInvoices()
         } else {
-          console.error('Status:', response.status)
-          const errorText = await response.text()
-          console.error('Réponse brute:', errorText)
-          
-          try {
-            const error = JSON.parse(errorText)
-            console.error('Erreur JSON:', error)
-            let errorMessage = 'Erreur lors de la création:\n'
-            if (typeof error === 'object') {
-              for (const [field, messages] of Object.entries(error)) {
-                if (Array.isArray(messages)) {
-                  errorMessage += `${field}: ${messages.join(', ')}\n`
-                } else {
-                  errorMessage += `${field}: ${messages}\n`
-                }
-              }
+          const errorData = await response.json()
+          let errorMessage = 'Erreur lors de la création:\n'
+          for (const [field, messages] of Object.entries(errorData)) {
+            if (Array.isArray(messages)) {
+              errorMessage += `${field}: ${messages.join(', ')}\n`
             } else {
-              errorMessage += error
+              errorMessage += `${field}: ${messages}\n`
             }
-            alert(errorMessage)
-          } catch (parseError) {
-            console.error('Erreur parsing JSON:', parseError)
-            alert('Erreur serveur: ' + errorText.substring(0, 200))
           }
+          alert(errorMessage)
         }
       } catch (error) {
         console.error('Error creating invoice:', error)
         alert('Erreur lors de la création de la facture')
+      } finally {
+        this.loading = false
       }
     },
     getDefaultDueDate() {

@@ -1,0 +1,46 @@
+# Requirements avancés avec optimisations
+Django==5.0.1
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+django-filter==23.5
+drf-spectacular==0.27.0
+djangorestframework-simplejwt==5.3.0
+
+# Cache et performance
+django-redis==5.4.0
+redis==5.0.1
+psutil==5.9.6
+
+# Base de données optimisée
+psycopg2-binary==2.9.9  # Pour PostgreSQL en production
+
+# Monitoring et logging
+django-debug-toolbar==4.2.0
+django-extensions==3.2.3
+
+# Sécurité
+django-ratelimit==4.1.0
+django-csp==3.7
+
+# Compression et optimisation
+django-compressor==4.4
+whitenoise==6.6.0
+
+# Validation et utilitaires
+python-decouple==3.8
+Pillow==10.1.0
+
+# Tests et développement
+pytest==7.4.3
+pytest-django==4.7.0
+factory-boy==3.3.0
+coverage==7.3.2
+
+# API et intégrations
+requests==2.31.0
+stripe==7.8.0
+celery==5.3.4
+
+# Formats et parsing
+python-dateutil==2.8.2
+pytz==2023.3

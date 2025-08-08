@@ -142,24 +142,15 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = [
             'invoice_type', 'customer', 'supplier_name', 'invoice_date', 
-            'due_date', 'billing_address', 'order', 'notes', 'lines'
+            'due_date', 'billing_address', 'subtotal_excl_vat', 'vat_amount', 
+            'total_incl_vat', 'order', 'notes', 'lines'
         ]
 
     def create(self, validated_data):
         lines_data = validated_data.pop('lines')
         invoice = Invoice.objects.create(**validated_data)
         
-        subtotal_excl_vat = 0
-        vat_amount = 0
-        
         for line_data in lines_data:
-            line = InvoiceLine.objects.create(invoice=invoice, **line_data)
-            subtotal_excl_vat += line.total_excl_vat
-            vat_amount += line.vat_amount
-        
-        invoice.subtotal_excl_vat = subtotal_excl_vat
-        invoice.vat_amount = vat_amount
-        invoice.total_incl_vat = subtotal_excl_vat + vat_amount
-        invoice.save()
+            InvoiceLine.objects.create(invoice=invoice, **line_data)
         
         return invoice

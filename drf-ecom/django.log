@@ -1,0 +1,10 @@
+INFO 2025-08-08 14:56:27,493 autoreload 5592 26064 Watching for file changes with StatReloader
+INFO 2025-08-08 14:56:27,494 autoreload 11292 2836 Watching for file changes with StatReloader
+INFO 2025-08-08 14:57:09,303 autoreload 11292 2836 C:\Users\Karim\Desktop\drf-ecom\ecommerce_api\settings.py changed, reloading.
+INFO 2025-08-08 14:57:09,342 autoreload 5592 26064 C:\Users\Karim\Desktop\drf-ecom\ecommerce_api\settings.py changed, reloading.
+INFO 2025-08-08 14:57:10,842 autoreload 4972 34132 Watching for file changes with StatReloader
+INFO 2025-08-08 14:57:10,862 autoreload 15192 18008 Watching for file changes with StatReloader
+INFO 2025-08-08 14:57:45,097 autoreload 4972 34132 C:\Users\Karim\Desktop\drf-ecom\shop\views.py changed, reloading.
+INFO 2025-08-08 14:57:45,184 autoreload 15192 18008 C:\Users\Karim\Desktop\drf-ecom\shop\views.py changed, reloading.
+INFO 2025-08-08 14:57:46,769 autoreload 12448 500 Watching for file changes with StatReloader
+INFO 2025-08-08 14:57:46,811 autoreload 19104 20428 Watching for file changes with StatReloader
